@@ -3,18 +3,6 @@ import pandas as pd
 import numpy as np
 import pickle
 
-model = pickle.load(open('model.pickle', 'rb'))
-
-st.set_page_config(
-    page_title="Predict Z-score",
-    page_icon="🎓"
-)
-
-st.title("🎓 Predict Z-score")
-st.markdown("""
-
-This app predicts the z-score of a student. 
-""")
 subject1_dict = {'ACCOUNTING': 0,
  'AGRICULTURAL SCIENCE': 1,
  'AGRO TECHNOLOGY': 2,
@@ -205,21 +193,55 @@ syllabus_dict = {'new': 0, 'old': 1}
 
 gender_dict = {'female': 0, 'male': 1,'Unknown': 1}
 
-with st.form('my_form'):
-    stream = st.selectbox('Stream : ', stream_dict.keys())
-    subject1 = st.selectbox('Subject 1 : ', subject1_dict.keys())
-    subject1_r = st.selectbox('Subject 1 Result : ', subject_r_dict.keys())
-    subject2 = st.selectbox('Subject 2 : ', subject2_dict.keys())
-    subject2_r = st.selectbox('Subject 2 Result : ', subject_r_dict.keys())
-    subject3 = st.selectbox('Subject 3 : ', subject3_dict.keys())
-    subject3_r = st.selectbox('Subject 3 Result : ', subject_r_dict.keys())
-    syllabus = st.selectbox('Syllabus : ', syllabus_dict.keys())
-    gender = st.selectbox('Gender : ', gender_dict.keys())
+model = pickle.load(open('model.pickle', 'rb'))
 
-    submit = st.form_submit_button('Submit')
+# Page configuration
+st.set_page_config(
+    page_title="Predict Z-score",
+    page_icon="🎓",
+    layout="centered",  # Options: 'centered' or 'wide'
+    initial_sidebar_state="expanded"
+)
 
+# Title and description
+st.title("🎓 Predict Z-score")
+st.markdown("""
+### Welcome to the Z-score Predictor!
+This app predicts the Z-score of a student based on their inputs.
+Please fill in the required fields below.
+""")
+
+# Adding a sidebar for additional options
+st.sidebar.header("App Settings")
+st.sidebar.markdown("Use the settings below to adjust the app experience.")
+
+# Example for potential settings in the sidebar
+theme = st.sidebar.radio(
+    "Choose a theme:",
+    options=["Default", "Light", "Dark"]
+)
+
+# Form for input fields
+with st.form('my_form', clear_on_submit=False):
+    st.subheader("Input Student Details")
+    
+    stream = st.selectbox('Stream', stream_dict.keys())
+    subject1 = st.selectbox('Subject 1', subject1_dict.keys())
+    subject1_r = st.selectbox('Subject 1 Result', subject_r_dict.keys())
+    subject2 = st.selectbox('Subject 2', subject2_dict.keys())
+    subject2_r = st.selectbox('Subject 2 Result', subject_r_dict.keys())
+    subject3 = st.selectbox('Subject 3', subject3_dict.keys())
+    subject3_r = st.selectbox('Subject 3 Result', subject_r_dict.keys())
+    syllabus = st.selectbox('Syllabus', syllabus_dict.keys())
+    gender = st.radio('Gender', gender_dict.keys())  # Changed to radio buttons for better UX
+
+    # Submit button
+    submit = st.form_submit_button('Predict Z-score')
+
+# Action after form submission
 if submit:
-    inp = np.array([[
+    # Preparing input data
+    inp = np.array([[ 
         stream_dict[stream],
         subject1_dict[subject1],
         subject2_dict[subject2],
@@ -232,8 +254,9 @@ if submit:
     ]])
     print(inp)
 
+    # Try making predictions
     try:
         prediction = model.predict(inp)
-        st.success(f'Predicted Z-score : {prediction[0]:.2f}')
-    except:
-        st.error('Please enter valid inputs')
+        st.success(f"🎉 Predicted Z-score: **{prediction[0]:.2f}**")
+    except Exception as e:
+        st.error(f"❌ Error: {str(e)}")
